@@ -6,3 +6,13 @@ Taking inspiration from popular features across popular apps and innovating in s
 * General route planning features and saving these for later use
 * Offline use - Map downloads, route saving. (No cellular reception)
 * Social feature - Forums for discussing routes and sharing them, or just a whole other tab for popular routes people take? - I dunno
+
+TO DO:
+* Front end - add navigation GUI
+* Add a data base + Israel Map Topo - That discriminates between offroad, paved, highway and such. (OpenStreetMap / Israel Hiking Map)
+* Add "Valhalla" navigation - https://valhalla.github.io/valhalla/valhalla-intro/
+* Mash these together and figure shit out
+
+
+Future Crap:
+* Add Web features for PC editing
