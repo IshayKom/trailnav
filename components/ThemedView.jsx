@@ -8,7 +8,7 @@ const ThemedView = ({style,safe = false, ...props}) => {
     const theme = Colors[colorScheme] ?? Colors.light
  if(!safe) return (
     <View
-    style={[{backgroundColor: theme.background,}, style]}
+    style={[{backgroundColor: theme.background}, style]}
     {...props}
     />
   )

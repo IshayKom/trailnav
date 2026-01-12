@@ -1,26 +1,40 @@
 import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback } from "react-native";
 import React from "react";
-import ThemedText from "../../components/ThemedText";
-import ThemedView from "../../components/ThemedView";
-import Spacer from "../../components/Spacer";
 import { Link } from "expo-router";
+import { useState } from "react";
+import { Colors } from "../../constants/Colors";
+
+
+import Spacer from "../../components/Spacer";
 import ThemedButton from "../../components/ThemedButton";
 import ThemedTextInput from "../../components/ThemedInput";
-import { useState } from "react";
+import ThemedText from "../../components/ThemedText";
+import ThemedView from "../../components/ThemedView";
+import { useUser } from "../../hooks/useUser";
 
 const register = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState(null);
 
-  const handeSumbit = () => {
-    console.log("Register button pressed", email, password);
-    // Handle register logic here
+  const {register} = useUser()
+
+  const handleSumbit = async () => {
+    setError(null);
+
+    console.log("Register button pressed", email, password, name);
+    try {
+      await register(email, password, name);
+    } catch (error) {
+      setError(error.message || "An unexpected error occurred.");
+    }
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ThemedView style={styles.container}>
-        <Spacer />
+        
         <ThemedText title={true} style={styles.title}>
           Register for an account
         </ThemedText>
@@ -41,9 +55,20 @@ const register = () => {
           value={password}
         />
 
-        <ThemedButton onPress={handeSumbit}>
+        <ThemedTextInput
+          style={{ width: "80%", marginBottom: 20 }}
+          placeholder="Full Name"
+          onChangeText={setName}
+          value={name}
+        />
+
+        <ThemedButton onPress={handleSumbit}>
           <Text style={{ color: "white" }}>Register</Text>
         </ThemedButton>
+
+        <Spacer/>
+
+        {error && <Text style={styles.error}>{error}</Text>}
 
         <Spacer height={20} />
         <Link href="/login">
@@ -70,4 +95,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
+  error: {
+      colors: Colors.warning,
+      padding: 10,
+      backgroundColor: '#f5c1c8',
+      borderColor: Colors.warning,
+      borderWidth: 1,
+      borderRadius: 6,
+      marginHorizontal: 10, 
+    }
 });
