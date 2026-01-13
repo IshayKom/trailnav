@@ -14,7 +14,6 @@ const styles = StyleSheet.create({
       backgroundColor: Colors.primary,
       padding: 15,
       borderRadius: 6,
-      marginVertical: 10,
     },
     pressed: {
       opacity: 0.75,

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "scheme": "trail-nav", 
+    "scheme": "trail-nav",
     "name": "trailnav",
     "slug": "trailnav",
     "version": "1.0.0",
@@ -21,10 +21,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.trailnav"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "@maplibre/maplibre-react-native"
+    ]
   }
 }
