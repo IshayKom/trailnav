@@ -11,7 +11,7 @@ import { useUser } from "../../hooks/useUser";
 import { Colors } from "../../constants/Colors";
 
 import ThemedButton from "../../components/ThemedButton";
-import ThemedTextInput from "../../components/ThemedInput";
+import ThemedTextInput from "../../components/ThemedTextInput";
 import ThemedText from "../../components/ThemedText";
 import ThemedView from "../../components/ThemedView";
 import Spacer from "../../components/Spacer";
