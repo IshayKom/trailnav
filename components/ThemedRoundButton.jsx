@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 25,
+    borderRadius: 20,
     borderCurve: "circular",
   },
   pressed: {

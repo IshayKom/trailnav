@@ -1,42 +1,71 @@
 import {
   StyleSheet,
-  ScrollView,
   TouchableWithoutFeedback,
   useColorScheme,
+  PermissionsAndroid,
+  Platform,
+  View,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ThemedView from "../../components/ThemedView";
-import ThemedText from "../../components/ThemedText";
 import { Ionicons } from "@expo/vector-icons";
 import ThemedRoundButton from "../../components/ThemedRoundButton";
-import Spacer from "../../components/Spacer";
 import { Colors } from "../../constants/Colors";
-import Atlas from "../../components/maps/Atlas";
 import {
-  Annotation,
   Camera,
   MapView,
-  MarkerView,
-  SymbolLayer,
+  UserLocation,
 } from "@maplibre/maplibre-react-native";
-import ThemedButton from "../../components/ThemedButton";
-
-const MAP_TYPES = [
-  { id: "topo", name: "Topology", url: "topo-v4" },
-  { id: "streets", name: "Streets", url: "base-v4" },
-  { id: "satellite", name: "Satellite", url: "hybrid-v4" },
-  { id: "outdoor", name: "Outdoor", url: "outdoor-v4" },
-];
+import CustomMarker from "../../components/maps/markers/CustomMarker";
+import ThemedMapTypeList from "../../components/maps/controls/ThemedMapTypeList";
+import ThemedMapLayersList from "../../components/maps/controls/ThemedMapLayersList";
 
 const map = () => {
   // Gets current color scheme
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme] ?? Colors.light;
 
-  const [currentType, setCurrentType] = useState(MAP_TYPES[0].url);
+  const cameraRef = useRef(null);
+
+  const [currentMapType, setCurrentMapType] = useState("topo-v4");
+
   const MAPTILER_API_KEY = "DcdHRYjDQxH3znvUsFqb"; // CHANGE ASAP WHEN POSSIBLE PLS
-  const [markerCoord, setMarkerCoord] = useState();
+
+  // Map Overlay States
   const [areMapButtonsVisible, setAreMapButtonVisible] = useState(false);
+  const [areLayersButtonsVisible, setAreLayersButtonsVisible] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  //Marker Coordinates State
+  const [markerCoord, setMarkerCoord] = useState();
+
+  //Request Location Permission on Android
+  useEffect(() => {
+    const requestLocationPermission = async () => {
+      if (Platform.OS === "android") {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+              title: "Location Permission",
+              message: "This app needs access to your location.",
+              buttonNeutral: "Ask Me Later",
+              buttonNegative: "Cancel",
+              buttonPositive: "OK",
+            },
+          );
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            console.log("Location permission granted");
+          } else {
+            console.log("Location permission denied");
+          }
+        } catch (error) {
+          console.warn(error);
+        }
+      }
+    };
+    requestLocationPermission();
+  }, []);
 
   const handleLongPress = async (e) => {
     try {
@@ -50,70 +79,110 @@ const map = () => {
     }
   };
 
-  const handleMapLayers = async () => {
-    setAreMapButtonVisible(!areMapButtonsVisible);
-  };
 
   return (
     <ThemedView style={styles.Container}>
-      //Map View Components using MapTiler at the moment
-      <TouchableWithoutFeedback onPressIn={() => setAreMapButtonVisible(false)}>
+      <TouchableWithoutFeedback
+        onPressIn={() => {
+          setAreMapButtonVisible(false);
+          setIsFollowing(false);
+          setAreLayersButtonsVisible(false);
+        }}
+      >
         <MapView
           style={{ flex: 1 }}
-          onLongPress={handleLongPress}
-          mapStyle={`https://api.maptiler.com/maps/${currentType}/style.json?key=${MAPTILER_API_KEY}`}
+          onLongPress={(e) => {
+            handleLongPress(e);
+          }}
+          mapStyle={`https://api.maptiler.com/maps/${currentMapType}/style.json?key=${MAPTILER_API_KEY}`}
           compassViewPosition={3}
         >
+          <UserLocation
+            renderMode="native"
+            androidRenderMode="compass"
+            minDisplacement={1}
+          />
           <Camera
+            ref={cameraRef}
+            followUserLocation={isFollowing}
+            followUserMode={"normal"}
+            followZoomLevel={15}
             defaultSettings={{
-              zoomLevel: 6.5,
-              animationMode: "moveTo",
-              centerCoordinate: [35.081831, 31.4117], //Israel Coords
+              centerCoordinate: [35.081831, 31.4117],
+              zoomLevel: 6,
             }}
           />
-          // need to add handler for after inputing text/image
-          {markerCoord && (
-            <MarkerView coordinate={markerCoord}>
-              <ThemedText style={styles.markerText}>📍 אלוהים</ThemedText>
-            </MarkerView>
-          )}
+
+          {/* VectorSource goes Here in the future*/}
+
+          {markerCoord && <CustomMarker Coords={markerCoord} />}
         </MapView>
       </TouchableWithoutFeedback>
-      // Choose Type of Map:
-      <ThemedRoundButton
-        style={[
-          styles.floatingButton,
-          areMapButtonsVisible === true && styles.pressed,
-        ]}
-        onPress={handleMapLayers}
-      >
-        <Ionicons
-          size={20}
-          name={areMapButtonsVisible ? "map" : "map-outline"}
-          color={areMapButtonsVisible ? theme.iconColorFocused : theme.iconColor}
-        />
-      </ThemedRoundButton>
-      {areMapButtonsVisible && (
-        <ScrollView
-          showsHorizontalScrollIndicator={false}
-          style={styles.scrollContainer}
-          contentContainerStyle={styles.scrollContent}
-          pointerEvents="box-none"
+
+      {/* MAP OVERLAY STUFF: */}
+
+      <View style={styles.mapOverlay}>
+        {/* Follow User Location Button */}
+        {!isFollowing && (
+          <ThemedRoundButton
+            style={styles.followButton}
+            onPress={() => {
+              setAreMapButtonVisible(false);
+              setIsFollowing(true);
+              setAreLayersButtonsVisible(false);
+            }}
+          >
+            <Ionicons size={20} name="locate" color={theme.iconColor} />
+          </ThemedRoundButton>
+        )}
+
+        {/* Map Type Button */}
+
+        <ThemedRoundButton
+          style={[
+            styles.floatingButton,
+            areMapButtonsVisible === true && styles.pressed,
+          ]}
+          onPress={() => setAreMapButtonVisible(!areMapButtonsVisible)}
         >
-          {MAP_TYPES.map((mapType) => (
-            <ThemedButton
-              key={mapType.id}
-              onPress={() => setCurrentType(mapType.url)}
-              style={[
-                styles.styleButton,
-                currentType === mapType.url && styles.pressed,
-              ]}
-            >
-              <ThemedText style={styles.mapname}>{mapType.name}</ThemedText>
-            </ThemedButton>
-          ))}
-        </ScrollView>
-      )}
+          <Ionicons
+            size={20}
+            name={areMapButtonsVisible ? "map" : "map-outline"}
+            color={
+              areMapButtonsVisible ? theme.iconColorFocused : theme.iconColor
+            }
+          />
+        </ThemedRoundButton>
+        {areMapButtonsVisible && (
+          <ThemedMapTypeList
+            currentType={currentMapType}
+            setCurrentType={setCurrentMapType}
+          />
+        )}
+
+        {/* Map Layers Button */}
+        <ThemedRoundButton
+          style={[
+            styles.layersButton,
+            areLayersButtonsVisible === true && styles.pressed,
+          ]}
+          onPress={() => setAreLayersButtonsVisible(!areLayersButtonsVisible)}
+        >
+          <Ionicons
+            size={20}
+            name={areLayersButtonsVisible ? "layers" : "layers-outline"}
+            color={
+              areLayersButtonsVisible ? theme.iconColorFocused : theme.iconColor
+            }
+          />
+        </ThemedRoundButton>
+        {areLayersButtonsVisible && (
+          <ThemedMapLayersList
+          // Add Functionality to layers - in the form of check boxes probably
+          />
+        )}
+      </View>
+      {/* END OF MAP OVERLAY STUFF */}
     </ThemedView>
   );
 };
@@ -125,34 +194,32 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flex: 1,
   },
+  mapOverlay: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    left: 0,
+    bottom: 0,
+  },
   floatingButton: {
     top: 40,
-    right: 10,
+    right: 5,
+    elevation: 5,
+  },
+  followButton: {
+    bottom: 5,
+    right: 55,
+    elevation: 5,
+  },
+  layersButton: {
+    top: 40,
+    left: 5,
     elevation: 5,
   },
   map: {
     flex: 1,
   },
-  scrollContainer: {
-    position: "absolute",
-    top: 90,
-    right: 10,
-    width: 120,
-    backgroundColor: "transparent",
-  },
-  scrollContent: {
-    paddingVertical: 10,
-    gap: 7,
-    flexDirection: "column",
-    alignItems: "stretch",
-  },
   pressed: {
     opacity: 0.75,
   },
-  mapname: {
-    textAlign: "center",
-  },
-  markerText: {
-    color: "blue",
-  }
 });
