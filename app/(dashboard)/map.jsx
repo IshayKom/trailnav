@@ -100,7 +100,8 @@ const map = () => {
           <UserLocation
             renderMode="native"
             androidRenderMode="compass"
-            minDisplacement={1}
+            minDisplacement={0}
+            androidPreferredFramesPerSecond={30}
           />
           <Camera
             ref={cameraRef}
