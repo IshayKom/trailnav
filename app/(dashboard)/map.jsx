@@ -79,6 +79,12 @@ const map = () => {
     }
   };
 
+  const handleFollowUserLocationPress = async () => {
+    if (cameraRef.current) {
+      cameraRef.current.zoomTo(15, 0); 
+    }
+  };
+
 
   return (
     <ThemedView style={styles.Container}>
@@ -107,7 +113,7 @@ const map = () => {
             ref={cameraRef}
             followUserLocation={isFollowing}
             followUserMode={"normal"}
-            followZoomLevel={15}
+            
             defaultSettings={{
               centerCoordinate: [35.081831, 31.4117],
               zoomLevel: 6,
@@ -131,6 +137,7 @@ const map = () => {
               setAreMapButtonVisible(false);
               setIsFollowing(true);
               setAreLayersButtonsVisible(false);
+              handleFollowUserLocationPress();
             }}
           >
             <Ionicons size={20} name="locate" color={theme.iconColor} />
